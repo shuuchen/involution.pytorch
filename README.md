@@ -3,7 +3,7 @@ A PyTorch implementation of Involution using einops
 
 An unofficial pytorch implementation of involution [paper](https://arxiv.org/pdf/2103.06255.pdf). Official implementation can be found [here](https://github.com/d-li14/involution).
 
-<img src="..." width="480" height="220" />
+<img src="https://github.com/shuuchen/involution.pytorch/blob/main/images/invo.png" width="480" height="220" />
 
 
 ## Requirements

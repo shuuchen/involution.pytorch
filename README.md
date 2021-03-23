@@ -8,13 +8,20 @@ An unofficial pytorch implementation of involution [paper](https://arxiv.org/pdf
 
 ## Requirements
 ```
-pip install -r requirements.txt
+pytorch >= 1.4.0
+einops >= 0.3.0
 ```
 
 ## Usage
 * An example:
-```python
-...
+```shell
+>>> import torch
+>>> from involution import Involution
+>>>
+>>> x = torch.rand(2,8,5,5)
+>>> i = Involution(8)
+>>> i(x).size()
+torch.Size([2, 8, 5, 5])
 ```
 
 ## TODO

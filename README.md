@@ -29,7 +29,7 @@ torch.Size([2, 8, 5, 5])
 
 
 ## References
-- [official implementation](https://github.com/d-li14/involution)
+- [official implementation](https://github.com/d-li14/involution/blob/main/cls/mmcls/models/utils/involution_naive.py)
 - [original paper](https://arxiv.org/pdf/2103.06255.pdf)
 - [einops](https://github.com/arogozhnikov/einops)
 - [利用Pytorch实现卷积操作](https://zhuanlan.zhihu.com/p/349683405)

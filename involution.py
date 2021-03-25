@@ -1,31 +1,52 @@
 import torch
-
-from torch import nn
 from einops import rearrange
+from torch import nn
+from torch.nn import functional as F
 
 
 class Involution(nn.Module):
-    def __init__(self, channels, groups=1, kernel_size=3, stride=1, reduction_ratio=2):
+
+    def __init__(self, in_channels, out_channels, groups=1, kernel_size=3, stride=1, reduction_ratio=2):
+
         super().__init__()
-        
-        channels_reduced = channels // reduction_ratio
+
+        channels_reduced = in_channels // min(reduction_ratio, in_channels)
         padding = kernel_size // 2
-        
-        self.o = nn.AvgPool2d(stride, stride) if stride > 1 else nn.Identity()
-        
+
         self.reduce = nn.Sequential(
-            nn.Conv2d(channels, channels_reduced, 1),
+            nn.Conv2d(in_channels, channels_reduced, 1),
             nn.BatchNorm2d(channels_reduced),
             nn.ReLU(inplace=True))
-        
+
         self.span = nn.Conv2d(channels_reduced, kernel_size * kernel_size * groups, 1)
         self.unfold = nn.Unfold(kernel_size, padding=padding, stride=stride)
         
-        self.k = kernel_size
+        self.resampling = None if in_channels == out_channels else nn.Conv2d(in_channels, out_channels, 1)
+
+        self.kernel_size = kernel_size
+        self.stride = stride
+        self.padding = padding
+        self.groups = groups
+        self.in_channels = in_channels
+        self.out_channels = out_channels
+
+    def forward(self, input_tensor):
         
-    def forward(self, x):
-        kernel = rearrange(self.span(self.reduce(self.o(x))), 'b (k j g) h w -> b g (k j) h w', k=self.k, j=self.k)
-        _, g, _, h, w = kernel.size()
-        x = rearrange(self.unfold(x), 'b (g d k j) (h w) -> b g d (k j) h w', g=g, k=self.k, j=self.k, h=h, w=w)
-        out = rearrange(torch.einsum('bgdxhw, bgxhw -> bgdhw', x, kernel), 'b g d h w -> b (g d) h w')
+        _, _, height, width = input_tensor.size()
+        if self.stride > 1:
+            out_size = lambda x: (x + 2 * self.padding - self.kernel_size) // self.stride + 1
+            height, width = out_size(height), out_size(width)
+        uf_x = rearrange(self.unfold(input_tensor), 'b (g d k j) (h w) -> b g d (k j) h w',
+                         g=self.groups, k=self.kernel_size, j=self.kernel_size, h=height, w=width)
+
+        if self.stride > 1:
+            input_tensor = F.adaptive_avg_pool2d(input_tensor, (height, width))
+        kernel = rearrange(self.span(self.reduce(input_tensor)), 'b (k j g) h w -> b g (k j) h w',
+                           k=self.kernel_size, j=self.kernel_size)
+
+        out = rearrange(torch.einsum('bgdxhw, bgxhw -> bgdhw', uf_x, kernel), 'b g d h w -> b (g d) h w')
+        
+        if self.in_channels != self.out_channels:
+            out = self.resampling(out)
+            
         return out

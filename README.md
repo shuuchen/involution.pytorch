@@ -22,7 +22,8 @@ einops >= 0.3.0
 >>> from involution import Involution
 >>>
 >>> x = torch.rand(2,8,5,5)
->>> i = Involution(in_channels=8, out_channels=4, groups=4, kernel_size=3, stride=2, reduction_ratio=2)
+>>> i = Involution(in_channels=8, out_channels=4, groups=4, 
+>>>                kernel_size=3, stride=2, reduction_ratio=2)
 >>> i(x).size()
 torch.Size([2, 4, 3, 3])
 ```

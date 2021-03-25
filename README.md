@@ -5,6 +5,9 @@ An unofficial pytorch implementation of involution [paper](https://arxiv.org/pdf
 
 <img src="https://github.com/shuuchen/involution.pytorch/blob/main/images/invo.png" width="480" height="220" />
 
+## Features
+- This layer can deal with arbitrary input and output channels, kernel sizes, strides and reduction ratios. However, input channels should be divisible by groups.
+
 
 ## Requirements
 ```
@@ -19,9 +22,9 @@ einops >= 0.3.0
 >>> from involution import Involution
 >>>
 >>> x = torch.rand(2,8,5,5)
->>> i = Involution(8)
+>>> i = Involution(in_channels=8, out_channels=4, groups=4, kernel_size=3, stride=2, reduction_ratio=2)
 >>> i(x).size()
-torch.Size([2, 8, 5, 5])
+torch.Size([2, 4, 3, 3])
 ```
 
 ## TODO

@@ -16,7 +16,7 @@ einops >= 0.3.0
 ```
 
 ## Usage
-* An example:
+* An example as in [test.ipynb](https://github.com/shuuchen/involution.pytorch/blob/main/test.ipynb):
 ```shell
 >>> import torch
 >>> from involution import Involution

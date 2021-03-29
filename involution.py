@@ -5,12 +5,14 @@ from torch.nn import functional as F
 
 
 class Involution(nn.Module):
-
+    """
+    Implementation of `Involution: Inverting the Inherence of Convolution for Visual Recognition`.
+    """
     def __init__(self, in_channels, out_channels, groups=1, kernel_size=3, stride=1, reduction_ratio=2):
 
         super().__init__()
 
-        channels_reduced = in_channels // min(reduction_ratio, in_channels)
+        channels_reduced = max(1, in_channels // reduction_ratio)
         padding = kernel_size // 2
 
         self.reduce = nn.Sequential(
@@ -27,11 +29,23 @@ class Involution(nn.Module):
         self.stride = stride
         self.padding = padding
         self.groups = groups
-        self.in_channels = in_channels
-        self.out_channels = out_channels
+
+    @classmethod
+    def get_name(cls):
+        """
+        Return this layer name.
+
+        Returns:
+            str: layer name.
+        """
+        return 'Involution'
 
     def forward(self, input_tensor):
-        
+        """
+        Calculate Involution.
+
+        override function from PyTorch.
+        """
         _, _, height, width = input_tensor.size()
         if self.stride > 1:
             out_size = lambda x: (x + 2 * self.padding - self.kernel_size) // self.stride + 1
@@ -46,7 +60,7 @@ class Involution(nn.Module):
 
         out = rearrange(torch.einsum('bgdxhw, bgxhw -> bgdhw', uf_x, kernel), 'b g d h w -> b (g d) h w')
         
-        if self.in_channels != self.out_channels:
+        if self.resampling:
             out = self.resampling(out)
             
         return out

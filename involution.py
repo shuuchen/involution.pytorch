@@ -63,4 +63,4 @@ class Involution(nn.Module):
         if self.resampling:
             out = self.resampling(out)
             
-        return out
+        return out.contiguous()
